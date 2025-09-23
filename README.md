@@ -1,5 +1,5 @@
 ## 첫 배포 
-
+![페이지 스크린샷](https://github.com/Mimjae98/first-deploy/pull/1#issuecomment-3322780012)
 
 ## 개발환경
 ```bash
