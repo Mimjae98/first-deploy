@@ -3,7 +3,7 @@ import Image from "next/image";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// JSON 불러오기
+// 기본 이력 JSON
 async function getResumeInfo() {
   const url =
     "https://raw.githubusercontent.com/Mimjae98/first-deploy/0.3/resume/service/resume_general_info_service.json";
@@ -19,21 +19,36 @@ async function getResumeInfo() {
   }>;
 }
 
-// github URL에서 사용자명 추출 (예: https://github.com/Mimjae98 -> Mimjae98)
+// 포트폴리오 JSON
+async function getPortfolioInfo() {
+  const url =
+    "https://raw.githubusercontent.com/Mimjae98/first-deploy/refs/heads/main/service/resume_portfolio_service.json";
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) {
+    console.error("fetch failed:", res.status, res.statusText);
+    throw new Error("Failed to fetch portfolio data");
+  }
+  return res.json() as Promise<{
+    project_name?: string;
+    project_introduction?: string;
+    project_github_url?: string;
+  }>;
+}
+
+// github URL에서 사용자명 추출
 function extractGithubId(github?: string) {
   if (!github) return "";
   try {
     const u = new URL(github);
-    // "/Mimjae98" -> "Mimjae98"
     return u.pathname.replace(/^\//, "");
   } catch {
-    // URL이 아닐 때 대비: 마지막 슬래시 이후
     return github.split("/").filter(Boolean).pop() ?? github;
   }
 }
 
 export default async function Home() {
   const data = await getResumeInfo();
+  const portfolio = await getPortfolioInfo();
 
   const name = data.name ?? "";
   const githubUrl = data.github ?? "";
@@ -49,7 +64,7 @@ export default async function Home() {
           <li>
             안녕하세요{" "}
             <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              {name}
+              김민재
             </code>{" "}
             입니다.
           </li>
@@ -73,8 +88,30 @@ export default async function Home() {
             입니다.
           </li>
           <li>{intro}</li>
-          <li>테스트 할 수 없는 건 만들 수 없다</li>
-          <li>제가 진행한 프로젝트는 곧 추가 예정입니다.</li>
+          {/* 기존 5,6 삭제 → 포트폴리오 추가 */}
+          <li>
+            프로젝트 이름:{" "}
+            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
+              {portfolio.project_name}
+            </code>
+          </li>
+          <li>
+            프로젝트 소개:{" "}
+            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
+              {portfolio.project_introduction}
+            </code>
+          </li>
+          <li>
+            프로젝트 깃허브:{" "}
+            <a
+              href={portfolio.project_github_url}
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-4 text-blue-500"
+            >
+              {portfolio.project_github_url}
+            </a>
+          </li>
         </ol>
       </main>
     </div>
